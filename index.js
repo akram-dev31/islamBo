@@ -3,7 +3,16 @@
 
 // init project
 var express = require('express');
-var app = express();
+const bodyParser = require('body-parser');
+let mongoose = require('mongoose');
+require('dotenv').config();
+
+
+const app = express();
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
@@ -20,9 +29,29 @@ app.get("/", function (req, res) {
 
 
 // your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
+app.get("/api/:date?", function (req, res) {
+  let dateParam = req.params.date;
+  let date;
+
+  if (!dateParam) {
+    date = new Date();
+  } else if (/^\d+$/.test(dateParam)) {
+    date = new Date(parseInt(dateParam));
+  } else {
+    date = new Date(dateParam);
+  }
+
+  if (isNaN(date)) {
+    res.json({ error: "Invalid Date" });
+  } else {
+    const response = {
+      unix: date.getTime(),
+      utc: date.toUTCString()
+    };
+    res.json(response);
+  }
 });
+
 
 
 
@@ -30,3 +59,4 @@ app.get("/api/hello", function (req, res) {
 var listener = app.listen(process.env.PORT, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
+
